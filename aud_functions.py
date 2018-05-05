@@ -11,6 +11,13 @@ import wave, os
 import numpy as np
 import audioop
 from misc_functions import *
+import scipy
+
+def highpass(data, fs, cutoff=300.0):
+    cutoff = 300.0
+    hpf = scipy.signal.firwin(65, cutoff/(fs/2), pass_zero=False)
+    x_h = scipy.signal.lfilter(hpf, 1, x)
+    return x_h
 
 def lowpass(data, fs, tfs):
     # resample data
@@ -44,6 +51,13 @@ def process_audio(fileloc, filelist):
 
     # Separate stereo data into channels
     channel = splitaudio(lp, "left")
+    x = np.fromstring(channel, dtype='Int16')
+ 
+    # High pass filter data
+    x_h = highpass(x, tfs)
+
+    # Do Voice Activity Detection
+
 
     #plot_wavform(audio)
 
