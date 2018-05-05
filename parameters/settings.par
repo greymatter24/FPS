@@ -1,0 +1,2 @@
+## Directory to store audio recordings
+audio_directory = ./audio
