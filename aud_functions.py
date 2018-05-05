@@ -9,33 +9,24 @@
 
 import wave, os
 import numpy as np
-import matplotlib.pyplot as plot
+import audioop
+from misc_functions import *
 
-def plot_wavform(audio):
-    signal = audio.readframes(-1)
-    signal = np.frombuffer(signal, dtype='Int16')
-    fs = audio.getframerate() 
-    #
-    if audio.getnchannels()==2:
-        # Split data into channels
-        channels = [[] for channel in range(audio.getnchannels())]
-        for index, datum in enumerate(signal):
-            channels[index%len(channels)].append(datum)
+def lowpass(data, fs, tfs):
+    # resample data
+    rc = audioop.ratecv(data, 2, 2, fs, tfs, None)
+    return rc
+    
+def splitaudio(audio, whichchannel="left"):
+    if whichchannel == "left":
+        channel = audioop.tomono(audio[0], 2, 1, 0)
     else:
-        channels = signal
-
-    # plot
-    plot.figure(1)
-    plot.title("Signal Wave")
-    for channel in channels:
-        ts = np.linspace(0, len(channel)/fs, num = len(channel))
-        plot.plot(ts, channel)
-    plot.show()
-    return
-
+        channel = audioop.tomono(audio[1], 2, 1, 0)
+    return channel
 
 def read_audio_file(filename):
-    audio = wave.open(filename, "r")
+    wavfile = open(filename, 'rb')
+    audio = wave.open(wavfile)
     return audio
 
 def process_audio(fileloc, filelist):
@@ -43,7 +34,19 @@ def process_audio(fileloc, filelist):
     fn = fileloc + os.sep + filelist[0]
     audio = read_audio_file(fn)
 
-    # Test
-    plot_wavform(audio)       
+    n_frames = audio.getnframes()
+    audio_data = audio.readframes(n_frames)
+
+    # Low pass filter data
+    fs = audio.getframerate() 
+    tfs = 16000 # target frequency
+    lp = lowpass(audio_data, fs, tfs) 
+
+    # Separate stereo data into channels
+    channel = splitaudio(lp, "left")
+
+    #plot_wavform(audio)
+
+   
  
     return
