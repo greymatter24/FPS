@@ -7,3 +7,4 @@ TODO: convert wav signal into energy
 
 180505 Initial audio input set up
        Read in wav file from filelist.txt and plot
+       Downsample wavform
