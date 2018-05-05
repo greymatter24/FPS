@@ -7,11 +7,32 @@
 ##
 ## Daniel Little <daniel DOT little AT unimelb DOT edu DOT au>
 
-import wave, os
+import wave, os, math
 import numpy as np
 import audioop
 from misc_functions import *
 import scipy
+
+def doAverage(x, fs, tr=5e-3):
+    alpha = math.exp(-2.2/(fs*tr))
+    #x_n = scipy.signal.lfilter(1-alpha, [1, -alpha], x**2)
+    x_n = scipy.signal.filtfilt(1-alpha, [1, -alpha], abs(x**2))
+    x_n = np.log(x_n)
+    return x_n
+
+def vad(x):
+    minsd = 0.02
+    minnsd = 0.015
+    fs = 16000
+    
+    x_n = doAverage(x, fs)
+    minval = np.mean(x_n) - 3.0 * np.std(x_n)
+    maxval = np.mean(x_n) + 3.0 * np.std(x_n)
+    x_n = x_n[(x_n > minval) & (x_n < maxval)]
+    
+    # TODO: EM algorithm to separate speech and pause
+    
+    return x_n
 
 def highpass(data, fs, cutoff=300.0):
     cutoff = 300.0
@@ -57,10 +78,8 @@ def process_audio(fileloc, filelist):
     x_h = highpass(x, tfs)
 
     # Do Voice Activity Detection
+    x_n = vad(x_h)
 
-
-    #plot_wavform(audio)
-
-   
+  
  
     return
