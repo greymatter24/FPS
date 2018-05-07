@@ -16,6 +16,23 @@ from scipy.stats import norm
 from operator import itemgetter
 from sklearn.mixture import GaussianMixture as GMM
 
+def em_slp(log_pause_durations, components):
+    return
+
+def compute_durations(x_s, tfs, targ_idx = 0):
+    vec = copy.deepcopy(x_s)
+    if targ_idx == 1:
+        vec = [1 - x for x in vec]
+    else:
+        vec = [x for x in vec]
+    vec.insert(0, 1) # Add 1 to beginning
+    vec.append(1)    # Add 1 to end
+    a = [i for i, x in enumerate(np.diff(vec) == 1) if x]
+    b = [i for i, x in enumerate(np.diff(vec) == -1) if x]
+    lengths = [a_i - b_i for a_i, b_i in zip(a, b)]
+    durations = [x * 1./tfs for x in lengths]
+    return durations
+
 def remove_short_segments(invec, fs, min_dur, targ_idx=1):
     outvec = copy.deepcopy(invec)
     if targ_idx == 1:
@@ -79,16 +96,16 @@ def get_em_parms(em):
     sm = sorted(m)
     return sm, ss, sw
 
-def do_average(x, fs, tr=5e-3):
-    alpha = math.exp(-2.2/(fs*tr))
-    #x_n = scipy.signal.lfilter(1-alpha, [1, -alpha], x**2)
+def do_average(x, tfs, tr=5e-3):
+    alpha = math.exp(-2.2/(tfs*tr))
+    #x_n = signal.lfilter(1.-alpha, [1., -alpha], abs(x**2))
     x_n = signal.filtfilt(1-alpha, [1, -alpha], abs(x**2))
     x_n = np.log(x_n)
     return x_n
 
 def vad(x):
-    fs = 16000
-    x_n = do_average(x, fs)
+    tfs = 16000
+    x_n = do_average(x, tfs)
     minval = np.mean(x_n) - 3.0 * np.std(x_n)
     maxval = np.mean(x_n) + 3.0 * np.std(x_n)
     x_n = x_n[(x_n > minval) & (x_n < maxval)]
@@ -161,6 +178,17 @@ def process_audio(par, filelist):
     x_s = remove_short_segments(x_s, tfs, float(par["minimum_speech_duration"]), 1)
     x_s = remove_short_segments(x_s, tfs, float(par["minimum_nonspeech_duration"]), 0)
 
+    # Compute speech durations from class vector
+    speech_durations = compute_durations(x_s, tfs, 1)
+
+    # Compute pause durations from class vector
+    pause_durations = compute_durations(x_s, tfs, 0)
+
+    # Run EM algorithm on log pauses
     
+    # Write diagnostics
+    # duration of pause component (sum(pause durations))
+    # duration of speech component (sum(speech durations))
+     
  
     return

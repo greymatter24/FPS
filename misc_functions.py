@@ -65,9 +65,9 @@ def plotEM(em, data):
     pdf_individual=responsibilities * pdf[:,np.newaxis]
     fig = plot.figure()
     ax=fig.add_subplot(111)
-    ax.hist(x_n, 30, normed=True, histtype="stepfilled", alpha = .4)
+    ax.hist(data, 30, normed=True, histtype="stepfilled", alpha = .4)
     ax.plot(x,pdf, '-k')
-    ax.plot(x, pdf_individual, '--k')
+    #ax.plot(x, pdf_individual, '--k')
     ax.text(0.04, 0.96, "Best-fit mixture", ha="left", va="top",transform=ax.transAxes)
     ax.set_xlabel("$x$")
     ax.set_ylabel("$p(x)$")
