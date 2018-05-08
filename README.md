@@ -80,6 +80,8 @@ TODO: Save durations to a file
 
 CHANGE LOG
 
+180609 Fixed several bugs in parse_speech_and_pause function 
+
 180608 Added in ability to process multiple files
     
        Added progress bar
