@@ -5,24 +5,45 @@ To run, type:
 
        python fps.py
        
+from the command window.
+
 This will run the fps analysis on the first entry in filelist.txt (to be updated to allow multiple files to be run)
 
 Requirements:
 
        Python Version 2.x (install from https://www.python.org/downloads/release/python-2715/)
+              
+              Windows Users should use the: https://www.python.org/ftp/python/2.7.15/python-2.7.15.amd64.msi install file
+              
+                     Python will be installed to C:\Python27
+              
+                     You will also need to add Python to the Windows path
+                     
+                     You can modify the Windows path by right-clicking "My Computer" in the start menu, then clicking "Properties", and then clicking "Advanced system settings" in the left bar. 
+                     
+                     Click "Environment Variables..." in the menu that comes up, and find "Path" in the bottom window (named "System variables"). 
+                     
+                     Add the text ;C:\Python27; C:\Python27\Scripts; to the end of your Path. 
+                     
+                     
        
        Python libraries:
        
-              numpy
+              numpy, scipy
               
-              scipy
+                     These libraries can be downloaded here: https://www.scipy.org/scipylib/download.html
               
               sklearn
               
-              [others?]
-       
-       
-
+                     Once you've installed numpy and scipy, you can install sklearn by opening a command/terminal window typing:
+                     
+                     pip install -U scikit-learn
+                     
+                     (You might need to navigate to C:\Python27\Scripts\ first, but if you have added that location to the path then pip should work from the command line)
+                     
+                     To open a terminal on windows, go to the start menu, in the search bar, type cmd and press enter
+                     
+        
 =================================================================================================================================
 
 TODO: Parse speech and pause durations into long speech and long pause, write diagnostics for long speech and long pause data
