@@ -67,11 +67,16 @@ def parse_speech_and_pause(pause_durations, speech_durations, threshold, first_o
     a = [i for i, x in enumerate(np.diff(flag) == 1) if x]
     b = [i for i, x in enumerate(np.diff(flag) == -1) if x]
     idx = zip([x-1 for x in a], [x-1 for x in b])
-    long_pause_durations = [None] * (n_long_pauses + (n_pause - n_speech))
-    long_speech_durations = [None] * (n_long_pauses + (n_speech - n_pause))
-    for i in range(0, len(idx)):
-        long_pause_durations[i] = all_d[idx[i][1]]
+    #idx = zip([x for x in a], [x for x in b])
+    long_pause_durations = [None] * (n_long_pauses + 1 + (n_pause - n_speech))
+    long_speech_durations = [None] * (n_long_pauses + 1 + (n_speech - n_pause))
+    for i in range(0, len(idx)):    
+        if idx[i][1] >= 0:
+            long_pause_durations[i] = all_d[idx[i][1]]    
+        else:         
+            long_pause_durations[i] = 0
         long_speech_durations[i] = sum([all_d[j] for j in range(idx[i][1]+1, idx[i][0]+1)])
+    long_pause_durations = [i for (i,v) in zip(long_pause_durations, [x != 0 for x in long_pause_durations]) if v]
     return long_pause_durations, long_speech_durations
 
 def em_slp(log_pause_durations, n_components):
@@ -269,9 +274,9 @@ def process_audio(par, filelist, index):
     fitspeech = compute_fit_single(speech_durations)
 
     # Parse times into long pause and long speech data
-    #lpd, lsd = parse_speech_and_pause(pause_durations, speech_durations, slp_threshold, x_s[0]) # problem with CharnReliability.wav
-    lpd = [1, 1, 1]
-    lsd = [1, 1, 1]
+    lpd, lsd = parse_speech_and_pause(pause_durations, speech_durations, slp_threshold, x_s[0]) # problem with CharnReliability.wav
+    #lpd = [1, 1, 1]
+    #lsd = [1, 1, 1]
 
     # Write diagnostics
     write_diagnostics(filelist[index], par["output_directory"], speech_durations, pause_durations, optcut, slp_threshold, err, slp, slp_m, slp_s, slp_w, fitone, fitk, fitspeech, lpd, lsd) 
