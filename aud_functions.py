@@ -117,8 +117,8 @@ def get_em_parms(em):
 
 def do_average(x, tfs, tr=5e-3):
     alpha = math.exp(-2.2/(tfs*tr))
-    #x_n = signal.lfilter(1.-alpha, [1., -alpha], abs(x**2))
-    x_n = signal.filtfilt(1-alpha, [1, -alpha], abs(x**2))
+    #x_n = signal.lfilter([1.-alpha], [1., -alpha], abs(x**2))
+    x_n = signal.filtfilt([1.-alpha], [1., -alpha], abs(x**2.), axis=0)
     x_n = np.log(x_n)
     return x_n
 
@@ -205,7 +205,7 @@ def process_audio(par, filelist):
 
     # Run EM algorithm on log pauses
     slp = em_slp(np.log(pause_durations), int(par["n_slp_components"]))
-    #slp_m, slp_s, slp_w = get_em_parms(slp)
+    slp_m, slp_s, slp_w = get_em_parms(slp)
     
     # Find optimal cutoff between distributions  
     slp_threshold = find_threshold(slp, 0, 1)  
