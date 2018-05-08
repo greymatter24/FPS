@@ -26,9 +26,7 @@ Requirements:
 =================================================================================================================================
 
 TODO: Parse speech and pause durations into long speech and long pause, write diagnostics for long speech and long pause data
-
-      Allow for multiple wav files to be procesed (cylce through filelist.txt)
-      
+          
       Add Dirichlet process classification of speech and pause durations
       
       Add Breath classification
@@ -36,6 +34,10 @@ TODO: Parse speech and pause durations into long speech and long pause, write di
 =================================================================================================================================
 
 CHANGE LOG
+
+180608 Added in ability to process multiple files
+    
+       Added progress bar
 
 180608 BETA V0.1
 
