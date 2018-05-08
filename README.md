@@ -70,8 +70,8 @@ Files:
        /parameters/ - Contains the settings .txt file which has some basic parameter settings for the FPS
 ==============================================================================
 
-TODO: Parse speech and pause durations into long speech and long pause, write diagnostics for long speech and long pause data
-          
+TODO: Save durations to a file 
+
       Add Dirichlet process classification of speech and pause durations
       
       Add Breath classification
@@ -83,6 +83,8 @@ CHANGE LOG
 180608 Added in ability to process multiple files
     
        Added progress bar
+       
+       Added parse speech and pause durations into long speech and long pause, write diagnostics for long speech and long pause data
 
 180608 BETA V0.1
 
