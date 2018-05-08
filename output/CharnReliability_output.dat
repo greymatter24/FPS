@@ -1,0 +1,57 @@
+### Temporal Parameters - FPS Short vs Long Pause Analysis ###
+CharnReliability.wav
+
+Number Of Speech-Pause                                        	201
+Duration of Pause Component (ms)                              	28.07
+Duration of Speech Component (ms)                             	102.20
+Duration of Sample - Speech + Pause (ms)                      	130.26
+Speech to Pause Ratio                                         	3.64
+
+High vs. Low Energy Classification Threshold (log Energy)     	-18.33
+
+Pause Minimum (Log ms)                                        	-4.20
+Pause Maximum (Log ms)                                        	0.18
+Pause Mean (Log ms)                                           	-2.62
+Pause Standard Deviation (Log ms)                             	1.06
+
+Pause Minimum (ms)                                            	0.01
+Pause Maximum (Log ms)                                        	1.20
+Pause Mean (Log ms)                                           	0.14
+Pause Standard Deviation (Log ms)                             	0.20
+
+Speech Minimum (Log ms)                                       	-3.90
+Speech Maximum (Log ms)                                       	1.09
+Speech Mean (Log ms)                                          	-1.29
+Speech Standard Deviation (Log ms)                            	1.27
+
+Speech Minimum (ms)                                           	0.02
+Speech Maximum (Log ms)                                       	2.96
+Speech Mean (Log ms)                                          	0.51
+Speech Standard Deviation (Log ms)                            	0.49
+
+Short vs. Long Pause Classification Threshold (Log ms)        	-2.39
+Short vs. Long Pause Classification Threshold (Log ms)        	0.09
+Proportion (misclass): Short as Long                          	0.00
+Proportion (misclass): Long as Short                          	0.00
+
+Proportion of data contained in short pause distribution      	0.70
+Predicted Number of Short Pauses                              	141
+Actual Number of Short Pauses                                 	133
+
+Short Pause Mean (Log ms)                                     	-3.20
+Short Pause Standard Deviation (Log ms)                       	0.27
+Short Pause Mean Real (ms)                                    	0.04
+Short Pause Standard Deviation Real (ms)                      	1.31
+
+Proportion of data contained in long pause distribution       	0.30
+Predicted Number of Long Pauses                               	60
+Actual Number of Long Pauses                                  	68
+
+Long Pause Mean (Log ms)                                      	-1.26
+Long Pause Standard Deviation (Log ms)                        	0.47
+Long Pause Mean Real (ms)                                     	0.28
+Long Pause Standard Deviation Real (ms)                       	1.60
+
+Fit of Single Distribution to Pause Data (-lnL)               	296.80
+Fit of k-Mixture Distribution to Pause Data (-lnL)            	1738.11
+Fit of Single Distribution to Speech Data (-lnL)              	332.65

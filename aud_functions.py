@@ -7,17 +7,36 @@
 ##
 ## Daniel Little <daniel DOT little AT unimelb DOT edu DOT au>
 
-import wave, os, math, struct, copy
+import wave, os, math, struct, copy, audioop, re
 import numpy as np
-import audioop
 from misc_functions import *
+from out_functions import *
 from scipy import signal
 from scipy.stats import norm
 from operator import itemgetter
 from sklearn.mixture import GaussianMixture as GMM
 
-def em_slp(log_pause_durations, components):
-    return
+def compute_fit_mixture(data, gmm_output):
+    m, s, w = get_em_parms(gmm_output)
+    n_k = len(m)
+    fit = 0.0
+    for i in range(0, n_k):
+        fit = fit - (sum(norm.logpdf(np.log(data), m[i], s[i]) * w[i]))
+    return fit
+
+def compute_fit_single(data):
+    fit = -sum(norm.logpdf(np.log(data), np.mean(np.log(data)), np.std(np.log(data))))
+    return fit
+
+def compute_classification_error(slp_threshold, slp):
+    slp_m, slp_s, slp_w = get_em_parms(slp)
+    err = [slp_w[0] * (1. - norm.cdf(slp_threshold, slp_m[0], slp_s[0])), slp_w[1] * (norm.cdf(slp_threshold, slp_m[1], slp_s[1]))]
+    return err
+
+def em_slp(log_pause_durations, n_components):
+    slp_gmm = GMM(n_components, covariance_type="full", tol=1e-4, n_init=20)
+    slp = slp_gmm.fit(log_pause_durations.reshape(-1,1)) 
+    return slp
 
 def compute_durations(x_s, tfs, targ_idx = 0):
     vec = copy.deepcopy(x_s)
@@ -103,13 +122,13 @@ def do_average(x, tfs, tr=5e-3):
     x_n = np.log(x_n)
     return x_n
 
-def vad(x):
+def vad(x, n_components):
     tfs = 16000
     x_n = do_average(x, tfs)
     minval = np.mean(x_n) - 3.0 * np.std(x_n)
     maxval = np.mean(x_n) + 3.0 * np.std(x_n)
     x_n = x_n[(x_n > minval) & (x_n < maxval)]
-    gmm = GMM(n_components=3, covariance_type="full", tol=1e-3, n_init=5)
+    gmm = GMM(n_components, covariance_type="full", tol=1e-3, n_init=5)
     em = gmm.fit(x_n.reshape(-1,1)) # 1D input need to reshape to 2D 
     thresholds = [[] for t in range(em.n_components-1)]
     thresholds[0] = find_threshold(em, 0, 1)
@@ -163,7 +182,7 @@ def process_audio(par, filelist):
     x_h = highpass(x, tfs)
 
     # Do Voice Activity Detection
-    em, x_n, thresholds = vad(x_h)
+    em, x_n, thresholds = vad(x_h, int(par["n_sp_components"]))
 
     # Get EM model parameters
     m, s, w = get_em_parms(em)
@@ -185,10 +204,24 @@ def process_audio(par, filelist):
     pause_durations = compute_durations(x_s, tfs, 0)
 
     # Run EM algorithm on log pauses
+    slp = em_slp(np.log(pause_durations), int(par["n_slp_components"]))
+    #slp_m, slp_s, slp_w = get_em_parms(slp)
     
+    # Find optimal cutoff between distributions  
+    slp_threshold = find_threshold(slp, 0, 1)  
+
+    # Compute classification error rate
+    err = compute_classification_error(slp_threshold, slp)
+    
+    # Compute fits
+    fitone = compute_fit_single(pause_durations)
+    fitk = compute_fit_mixture(pause_durations, slp)
+    fitspeech = compute_fit_single(speech_durations)
+
+    # Parse times into long pause and long speech data
+
     # Write diagnostics
-    # duration of pause component (sum(pause durations))
-    # duration of speech component (sum(speech durations))
-     
+    write_diagnostics(filelist[0], par["output_directory"], speech_durations, pause_durations, optcut, slp_threshold, err, slp, slp_m, slp_s, slp_w, fitone, fitk, fitspeech) 
+
  
     return

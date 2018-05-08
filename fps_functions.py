@@ -45,7 +45,7 @@ def run_fps(audio_list_filename):
     par = load_settings("./parameters")
 
     filelist = read_audio_filenames("filelist.txt")
-    process_audio(par["audio_directory"], filelist)
+    process_audio(par, filelist)
 
 
     return filelist
