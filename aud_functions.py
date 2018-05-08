@@ -272,7 +272,7 @@ def process_audio(par, filelist, index):
     lpd, lsd = parse_speech_and_pause(pause_durations, speech_durations, slp_threshold, x_s[0])
 
     # Write diagnostics
-    write_diagnostics(filelist[index], par["output_directory"], speech_durations, pause_durations, optcut, slp_threshold, err, slp, slp_m, slp_s, slp_w, fitone, fitk, fitspeech) 
+    write_diagnostics(filelist[index], par["output_directory"], speech_durations, pause_durations, optcut, slp_threshold, err, slp, slp_m, slp_s, slp_w, fitone, fitk, fitspeech, lpd, lsd) 
     
     progress(100, 100, suffix='')
     return
