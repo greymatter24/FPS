@@ -7,7 +7,7 @@
 ##
 ## Daniel Little <daniel DOT little AT unimelb DOT edu DOT au>
 
-import wave, os, math, struct, copy, audioop, re
+import wave, os, math, struct, copy, audioop, re, sys
 import numpy as np
 from misc_functions import *
 from out_functions import *
@@ -15,6 +15,17 @@ from scipy import signal
 from scipy.stats import norm
 from operator import itemgetter
 from sklearn.mixture import GaussianMixture as GMM
+
+def progress(count, total, suffix=''):
+    bar_len = 60
+    filled_len = int(round(bar_len * count / float(total)))
+
+    percents = round(100.0 * count / float(total), 1)
+    bar = '=' * filled_len + '-' * (bar_len - filled_len)
+
+    sys.stdout.write('[%s] %s%s ...%s\r' % (bar, percents, '%', suffix))
+    sys.stdout.flush()  # As suggested by Rom Ruben
+    return
 
 def compute_fit_mixture(data, gmm_output):
     m, s, w = get_em_parms(gmm_output)
@@ -158,11 +169,10 @@ def read_audio_file(filename):
     audio = wave.open(wavfile)
     return audio
 
-def process_audio(par, filelist):
-    #for i in range(0, len(filelist)):
-    fn = par["audio_directory"] + os.sep + filelist[0]
+def process_audio(par, filelist, index):
+    progress(0, 100, suffix='')
+    fn = par["audio_directory"] + os.sep + filelist[index]
     audio = read_audio_file(fn)
-
     n_frames = audio.getnframes()
     audio_data = audio.readframes(n_frames)
 
@@ -170,19 +180,24 @@ def process_audio(par, filelist):
     fs = audio.getframerate() 
     tfs = 16000 # target frequency
     lp = lowpass(audio_data, fs, tfs) 
+    progress(10, 100, suffix='')
 
     # Separate stereo data into channels
     channel = splitaudio(lp, "left")
-
+    progress(20, 100, suffix='')
+ 
     # Convert from bytes to float 16
     x_i = np.fromstring(channel, dtype='Int16')
     x = [float(val) / pow(2, 15) for val in x_i]
+    progress(30, 100, suffix='')
  
     # High pass filter data
     x_h = highpass(x, tfs)
+    progress(40, 100, suffix='')
 
     # Do Voice Activity Detection
     em, x_n, thresholds = vad(x_h, int(par["n_sp_components"]))
+    progress(50, 100, suffix='')
 
     # Get EM model parameters
     m, s, w = get_em_parms(em)
@@ -195,18 +210,23 @@ def process_audio(par, filelist):
 
     # Remove segments which are too short
     x_s = remove_short_segments(x_s, tfs, float(par["minimum_speech_duration"]), 1)
+    progress(60, 100, suffix='')
+
     x_s = remove_short_segments(x_s, tfs, float(par["minimum_nonspeech_duration"]), 0)
+    progress(70, 100, suffix='')
 
     # Compute speech durations from class vector
     speech_durations = compute_durations(x_s, tfs, 1)
 
     # Compute pause durations from class vector
     pause_durations = compute_durations(x_s, tfs, 0)
+    progress(80, 100, suffix='')
 
     # Run EM algorithm on log pauses
     slp = em_slp(np.log(pause_durations), int(par["n_slp_components"]))
     slp_m, slp_s, slp_w = get_em_parms(slp)
-    
+    progress(90, 100, suffix='')
+
     # Find optimal cutoff between distributions  
     slp_threshold = find_threshold(slp, 0, 1)  
 
@@ -221,7 +241,13 @@ def process_audio(par, filelist):
     # Parse times into long pause and long speech data
 
     # Write diagnostics
-    write_diagnostics(filelist[0], par["output_directory"], speech_durations, pause_durations, optcut, slp_threshold, err, slp, slp_m, slp_s, slp_w, fitone, fitk, fitspeech) 
+    write_diagnostics(filelist[index], par["output_directory"], speech_durations, pause_durations, optcut, slp_threshold, err, slp, slp_m, slp_s, slp_w, fitone, fitk, fitspeech) 
+    
+    progress(100, 100, suffix='')
+    return
 
- 
+def process_audio_list(par, filelist):
+    for i in range(0, len(filelist)):
+         print("\n Processing" + " " + filelist[i] + "\n")
+         process_audio(par, filelist, i)
     return
