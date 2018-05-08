@@ -45,6 +45,28 @@ Requirements:
                      
         
 =================================================================================================================================
+Files:
+
+       fps.py - Main file to run the FPS 
+       
+       fps_functions.py - Functions for reading input files and calling the audio processing functions
+       
+       aud_functions.py - Functions for processing audio using FPS
+       
+       out_functions.py - Functions for writing output from FPS
+       
+       misc_functions.py - Some earlier versions of functions and code for plotting 
+       
+       filelist.txt - list of .wav files (located in /audio) for processing
+            
+       /audio/ - Folder for placing .wav files for processing
+       
+       /output/ - Folder containing output of FPS
+       
+       /papers/ - Contains relevant publications about FPS (note that the Python version is a simplified version of the one published in Little2012.pdf
+       
+       /parameters/ - Contains the settings .txt file which has some basic parameter settings for the FPS
+=================================================================================================================================
 
 TODO: Parse speech and pause durations into long speech and long pause, write diagnostics for long speech and long pause data
           
