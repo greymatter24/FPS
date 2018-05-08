@@ -1,2 +1,13 @@
 ## Directory to store audio recordings
 audio_directory = ./audio
+output_directory = ./output
+
+## Minimum duractions in secs .02, .015
+minimum_speech_duration = 0.02 
+minimum_nonspeech_duration = 0.015
+
+## Settings for speech-pause analysis
+n_sp_components = 3
+
+## Settings for short-long pause analysis
+n_slp_components = 2
