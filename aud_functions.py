@@ -44,6 +44,36 @@ def compute_classification_error(slp_threshold, slp):
     err = [slp_w[0] * (1. - norm.cdf(slp_threshold, slp_m[0], slp_s[0])), slp_w[1] * (norm.cdf(slp_threshold, slp_m[1], slp_s[1]))]
     return err
 
+def parse_speech_and_pause(pause_durations, speech_durations, threshold, first_onset_speech):
+    n_speech = len(speech_durations)
+    n_pause = len(pause_durations)
+    n_long_pauses = sum(np.log(pause_durations) >= threshold)
+    speech_flag = [True] * n_speech
+    short_pause_flag = np.log(pause_durations) < threshold
+    if first_onset_speech == 0: # pause first
+        all_d = [a for b in zip(pause_durations, speech_durations) for a in b]
+        all_f = [a for b in zip(short_pause_flag, speech_flag) for a in b]
+        if n_pause > n_speech:
+            all_d.append(pause_durations[len(pause_durations)-1])
+    else:
+        all_d = [a for b in zip(speech_durations, pause_durations) for a in b]
+        all_f = [a for b in zip(speech_flag, short_pause_flag) for a in b]
+        if n_speech > n_pause:
+            all_d.append(speech_durations[len(speech_durations)-1])
+    flag = [1-int(x) for x in all_f] # Tag pause durations
+    flag.insert(0, 1) # Add tag to beginning
+    flag.append(1)    # Add tag to end
+    # Find repeated speech tags (i.e., short pauses) and sum them
+    a = [i for i, x in enumerate(np.diff(flag) == 1) if x]
+    b = [i for i, x in enumerate(np.diff(flag) == -1) if x]
+    idx = zip([x-1 for x in a], [x-1 for x in b])
+    long_pause_durations = [None] * (n_long_pauses + (n_pause - n_speech))
+    long_speech_durations = [None] * (n_long_pauses + (n_speech - n_pause))
+    for i in range(0, len(idx)):
+        long_pause_durations[i] = all_d[idx[i][1]]
+        long_speech_durations[i] = sum([all_d[j] for j in range(idx[i][1]+1, idx[i][0]+1)])
+    return long_pause_durations, long_speech_durations
+
 def em_slp(log_pause_durations, n_components):
     slp_gmm = GMM(n_components, covariance_type="full", tol=1e-4, n_init=20)
     slp = slp_gmm.fit(log_pause_durations.reshape(-1,1)) 
@@ -239,6 +269,7 @@ def process_audio(par, filelist, index):
     fitspeech = compute_fit_single(speech_durations)
 
     # Parse times into long pause and long speech data
+    lpd, lsd = parse_speech_and_pause(pause_durations, speech_durations, slp_threshold, x_s[0])
 
     # Write diagnostics
     write_diagnostics(filelist[index], par["output_directory"], speech_durations, pause_durations, optcut, slp_threshold, err, slp, slp_m, slp_s, slp_w, fitone, fitk, fitspeech) 
