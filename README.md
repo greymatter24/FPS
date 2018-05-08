@@ -44,7 +44,9 @@ Requirements:
                      To open a terminal on windows, go to the start menu, in the search bar, type cmd and press enter
                      
         
-=================================================================================================================================
+==============================================================================
+
+
 Files:
 
        fps.py - Main file to run the FPS 
@@ -66,7 +68,7 @@ Files:
        /papers/ - Contains relevant publications about FPS (note that the Python version is a simplified version of the one published in Little2012.pdf
        
        /parameters/ - Contains the settings .txt file which has some basic parameter settings for the FPS
-=================================================================================================================================
+==============================================================================
 
 TODO: Parse speech and pause durations into long speech and long pause, write diagnostics for long speech and long pause data
           
@@ -74,7 +76,7 @@ TODO: Parse speech and pause durations into long speech and long pause, write di
       
       Add Breath classification
       
-=================================================================================================================================
+==============================================================================
 
 CHANGE LOG
 
