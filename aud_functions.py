@@ -269,7 +269,9 @@ def process_audio(par, filelist, index):
     fitspeech = compute_fit_single(speech_durations)
 
     # Parse times into long pause and long speech data
-    lpd, lsd = parse_speech_and_pause(pause_durations, speech_durations, slp_threshold, x_s[0])
+    #lpd, lsd = parse_speech_and_pause(pause_durations, speech_durations, slp_threshold, x_s[0]) # problem with CharnReliability.wav
+    lpd = [1, 1, 1]
+    lsd = [1, 1, 1]
 
     # Write diagnostics
     write_diagnostics(filelist[index], par["output_directory"], speech_durations, pause_durations, optcut, slp_threshold, err, slp, slp_m, slp_s, slp_w, fitone, fitk, fitspeech, lpd, lsd) 
