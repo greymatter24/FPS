@@ -45,38 +45,53 @@ def compute_classification_error(slp_threshold, slp):
     return err
 
 def parse_speech_and_pause(pause_durations, speech_durations, threshold, first_onset_speech):
+    # create a listof durations
     n_speech = len(speech_durations)
     n_pause = len(pause_durations)
-    n_long_pauses = sum(np.log(pause_durations) >= threshold)
-    speech_flag = [True] * n_speech
-    short_pause_flag = np.log(pause_durations) < threshold
-    if first_onset_speech == 0: # pause first
-        all_d = [a for b in zip(pause_durations, speech_durations) for a in b]
-        all_f = [a for b in zip(short_pause_flag, speech_flag) for a in b]
-        if n_pause > n_speech:
-            all_d.append(pause_durations[len(pause_durations)-1])
+
+    # correct for different list sizes
+    if n_pause > n_speech: # More pause than speech (implies pause first)
+        speech_durations.append(0.0)
+        n_speech = len(speech_durations)
+    elif n_speech > n_pause: # More speech than pause (implies pause first)
+        pause_durations.insert(0, 0.0)
+        n_pause = len(pause_durations)
+
+    # Combine vectors
+    all_d = zip(pause_durations, speech_durations)
+    
+    n_long_pause = sum(pause_durations > np.exp(threshold))
+
+    # Preallocate
+    long_pause_durations = [None] * (n_long_pause + 1)
+    long_speech_durations = [None] * (n_long_pause + 1)
+
+    # Assign first entry
+    if all_d[0][0] >= np.exp(threshold):
+        lp = all_d[0][0]
+        ls = all_d[0][1]
     else:
-        all_d = [a for b in zip(speech_durations, pause_durations) for a in b]
-        all_f = [a for b in zip(speech_flag, short_pause_flag) for a in b]
-        if n_speech > n_pause:
-            all_d.append(speech_durations[len(speech_durations)-1])
-    flag = [1-int(x) for x in all_f] # Tag pause durations
-    flag.insert(0, 1) # Add tag to beginning
-    flag.append(1)    # Add tag to end
-    # Find repeated speech tags (i.e., short pauses) and sum them
-    a = [i for i, x in enumerate(np.diff(flag) == 1) if x]
-    b = [i for i, x in enumerate(np.diff(flag) == -1) if x]
-    idx = zip([x-1 for x in a], [x-1 for x in b])
-    #idx = zip([x for x in a], [x for x in b])
-    long_pause_durations = [None] * (n_long_pauses + 1 + (n_pause - n_speech))
-    long_speech_durations = [None] * (n_long_pauses + 1 + (n_speech - n_pause))
-    for i in range(0, len(idx)):    
-        if idx[i][1] >= 0:
-            long_pause_durations[i] = all_d[idx[i][1]]    
-        else:         
-            long_pause_durations[i] = 0
-        long_speech_durations[i] = sum([all_d[j] for j in range(idx[i][1]+1, idx[i][0]+1)])
-    long_pause_durations = [i for (i,v) in zip(long_pause_durations, [x != 0 for x in long_pause_durations]) if v]
+        lp = 0.0
+        ls = all_d[0][0] + all_d[0][1]
+
+    counter = -1
+    for i in range(1,n_pause):
+        if all_d[i][0] < np.exp(threshold):
+            ls = ls + all_d[i][0] + all_d[i][1]
+        else:
+            counter = counter + 1
+            long_pause_durations[counter] = lp
+            long_speech_durations[counter] = ls
+            lp = all_d[i][0]
+            ls = all_d[i][1]
+    counter = counter + 1
+    long_pause_durations[counter] = lp
+    long_speech_durations[counter] = ls
+    
+    long_pause_durations = [x for x in long_pause_durations if x is not None]
+    long_pause_durations = [x for x in long_pause_durations if x != 0]
+    long_speech_durations = [x for x in long_speech_durations if x is not None]
+    long_pause_durations = [x for x in long_speech_durations if x != 0]
     return long_pause_durations, long_speech_durations
 
 def em_slp(log_pause_durations, n_components):
@@ -275,8 +290,7 @@ def process_audio(par, filelist, index):
 
     # Parse times into long pause and long speech data
     lpd, lsd = parse_speech_and_pause(pause_durations, speech_durations, slp_threshold, x_s[0]) # problem with CharnReliability.wav
-    #lpd = [1, 1, 1]
-    #lsd = [1, 1, 1]
+
 
     # Write diagnostics
     write_diagnostics(filelist[index], par["output_directory"], speech_durations, pause_durations, optcut, slp_threshold, err, slp, slp_m, slp_s, slp_w, fitone, fitk, fitspeech, lpd, lsd) 
