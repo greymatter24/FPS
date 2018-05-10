@@ -16,6 +16,7 @@ from scipy import signal
 from scipy.stats import norm
 from operator import itemgetter
 from sklearn.mixture import GaussianMixture as GMM
+from sklearn.mixture import BayesianGaussianMixture as BGM 
 
 def progress(count, total, suffix=''):
     bar_len = 60
@@ -29,7 +30,7 @@ def progress(count, total, suffix=''):
     return
 
 def compute_fit_mixture(data, gmm_output):
-    m, s, w = get_em_parms(gmm_output)
+    m, s, w = get_mix_parms(gmm_output)
     n_k = len(m)
     fit = 0.0
     for i in range(0, n_k):
@@ -41,7 +42,7 @@ def compute_fit_single(data):
     return fit
 
 def compute_classification_error(slp_threshold, slp):
-    slp_m, slp_s, slp_w = get_em_parms(slp)
+    slp_m, slp_s, slp_w = get_mix_parms(slp)
     err = [slp_w[0] * (1. - norm.cdf(slp_threshold, slp_m[0], slp_s[0])), slp_w[1] * (norm.cdf(slp_threshold, slp_m[1], slp_s[1]))]
     return err
 
@@ -155,9 +156,9 @@ def flatten_list(x):
     flattened_list = f(x)    
     return flattened_list
 
-def find_threshold(em, index1, index2):
+def find_threshold(mix, index1, index2):
     n = 101 # support
-    sm, ss, sw = get_em_parms(em)
+    sm, ss, sw = get_mix_parms(mix)
     low = min(np.add(sm, map(lambda x: x * -3, ss)))
     high = max(np.add(sm, map(lambda x: x * 3, ss)))
     step = (high - low)/(n - 1.)
@@ -167,11 +168,11 @@ def find_threshold(em, index1, index2):
     threshold = x[midx]
     return threshold
 
-def get_em_parms(em):
-    k = em.n_components
-    m = flatten_list(em.means_.tolist())
-    s = flatten_list(flatten_list(em.covariances_.tolist()))
-    w = em.weights_.tolist()
+def get_mix_parms(mix):
+    k = mix.n_components
+    m = flatten_list(mix.means_.tolist())
+    s = flatten_list(flatten_list(mix.covariances_.tolist()))
+    w = mix.weights_.tolist()
     ss = [j for _,j in sorted(zip(m,s))]
     sw = [j for _,j in sorted(zip(m,w))]
     sm = sorted(m)
@@ -184,18 +185,24 @@ def do_average(x, tfs, tr=5e-3):
     x_n = np.log(x_n)
     return x_n
 
-def vad(x, n_components):
-    tfs = 16000
+def smooth_data(x, tfs=16000):
     x_n = do_average(x, tfs)
     minval = np.mean(x_n) - 3.0 * np.std(x_n)
     maxval = np.mean(x_n) + 3.0 * np.std(x_n)
     x_n = x_n[(x_n > minval) & (x_n < maxval)]
-    gmm = GMM(n_components, covariance_type="full", tol=1e-3, n_init=5)
-    em = gmm.fit(x_n.reshape(-1,1)) # 1D input need to reshape to 2D 
-    thresholds = [[] for t in range(em.n_components-1)]
-    thresholds[0] = find_threshold(em, 0, 1)
-    thresholds[1] = find_threshold(em, 1, 2)
-    return em, x_n, thresholds
+    return x_n
+
+def vad(x_n, n_components, method = "em"):
+    if method.lower() in ["em"]:
+        gmm = GMM(n_components, covariance_type="full", tol=1e-3, n_init=5)
+        mix = gmm.fit(x_n.reshape(-1,1)) # 1D input need to reshape to 2D 
+    elif method.lower() in ["dpgmm"]:
+        gmm = BGM(n_components, covariance_type="full", tol=1e-3, n_init=1)
+        mix = gmm.fit(x_n.reshape(-1,1)) # 1D input need to reshape to 2D 
+    thresholds = [[] for t in range(mix.n_components-1)]
+    thresholds[0] = find_threshold(mix, 0, 1)
+    thresholds[1] = find_threshold(mix, 1, 2)
+    return mix, thresholds
 
 def highpass(data, fs, cutoff=300.0):
     cutoff = 300.0
@@ -247,11 +254,12 @@ def process_audio(par, filelist, index):
     progress(40, 100, suffix='')
 
     # Do Voice Activity Detection
-    em, x_n, thresholds = vad(x_h, int(par["n_sp_components"]))
+    x_n = smooth_data(x_h, tfs = 16000)
+    mix, thresholds = vad(x_n, int(par["n_sp_components"]), par["classification_method"])
     progress(50, 100, suffix='')
 
     # Get EM model parameters
-    m, s, w = get_em_parms(em)
+    m, s, w = get_mix_parms(mix)
 
     # Classify speech and nonspeech
     optcut = get_opt_cutoff(w, thresholds)
@@ -278,7 +286,7 @@ def process_audio(par, filelist, index):
 
     # Run EM algorithm on log pauses
     slp = em_slp(np.log(pause_durations), int(par["n_slp_components"]))
-    slp_m, slp_s, slp_w = get_em_parms(slp)
+    slp_m, slp_s, slp_w = get_mix_parms(slp)
     progress(90, 100, suffix='')
 
     # Find optimal cutoff between distributions  
