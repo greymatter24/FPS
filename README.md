@@ -78,17 +78,19 @@ TODO: Add Dirichlet process classification of speech and pause durations
 
 CHANGE LOG
 
-180609 Fixed several bugs in parse_speech_and_pause function 
+180510 Added duration output
 
-180608 Added in ability to process multiple files
+180509 Fixed several bugs in parse_speech_and_pause function 
+
+180508 Added in ability to process multiple files
     
        Added progress bar
        
        Added parse speech and pause durations into long speech and long pause, write diagnostics for long speech and long pause data
 
-180608 BETA V0.1
+180508 BETA V0.1
 
-180608 Added short-long pause classification
+180508 Added short-long pause classification
        
        Added computation of fit 
        
