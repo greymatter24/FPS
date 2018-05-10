@@ -9,5 +9,8 @@ minimum_nonspeech_duration = 0.015
 ## Settings for speech-pause analysis
 n_sp_components = 3
 
+## Speech-pause classification method [em | dpgmm] - dpgmm may be considerably slower
+classification_method = dpgmm
+
 ## Settings for short-long pause analysis
 n_slp_components = 2
