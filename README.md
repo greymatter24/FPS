@@ -70,9 +70,7 @@ Files:
        /parameters/ - Contains the settings .txt file which has some basic parameter settings for the FPS
 ==============================================================================
 
-TODO: Save durations to a file 
-
-      Add Dirichlet process classification of speech and pause durations
+TODO: Add Dirichlet process classification of speech and pause durations
       
       Add Breath classification
       
