@@ -7,6 +7,7 @@
 ##
 ## Daniel Little <daniel DOT little AT unimelb DOT edu DOT au>
 
+## TODO: Take out misc_functions import
 import wave, os, math, struct, copy, audioop, re, sys
 import numpy as np
 from misc_functions import *
@@ -91,7 +92,7 @@ def parse_speech_and_pause(pause_durations, speech_durations, threshold, first_o
     long_pause_durations = [x for x in long_pause_durations if x is not None]
     long_pause_durations = [x for x in long_pause_durations if x != 0]
     long_speech_durations = [x for x in long_speech_durations if x is not None]
-    long_pause_durations = [x for x in long_speech_durations if x != 0]
+    long_speech_durations = [x for x in long_speech_durations if x != 0]
     return long_pause_durations, long_speech_durations
 
 def em_slp(log_pause_durations, n_components):
@@ -270,6 +271,9 @@ def process_audio(par, filelist, index):
 
     # Compute pause durations from class vector
     pause_durations = compute_durations(x_s, tfs, 0)
+
+    # Write out speech and pause durations
+    write_durations(filelist[index], par["output_directory"], pause_durations, speech_durations, "_speech_pause_durations", ["Pause_Durations", "Speech_Durations"])
     progress(80, 100, suffix='')
 
     # Run EM algorithm on log pauses
@@ -290,11 +294,10 @@ def process_audio(par, filelist, index):
 
     # Parse times into long pause and long speech data
     lpd, lsd = parse_speech_and_pause(pause_durations, speech_durations, slp_threshold, x_s[0]) # problem with CharnReliability.wav
-
-
+    
     # Write diagnostics
     write_diagnostics(filelist[index], par["output_directory"], speech_durations, pause_durations, optcut, slp_threshold, err, slp, slp_m, slp_s, slp_w, fitone, fitk, fitspeech, lpd, lsd) 
-    
+    write_durations(filelist[index], par["output_directory"], lpd, lsd, "_final_durations", ["Pause_Durations", "Speech_Durations"])
     progress(100, 100, suffix='')
     return
 
