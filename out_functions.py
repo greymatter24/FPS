@@ -114,3 +114,39 @@ def write_diagnostics(file_name, output_dir, speech_durations, pause_durations, 
     fid.close()
 
     return
+
+
+def write_durations(file_name, output_dir, durations_1, durations_2, suffix, columns):
+    
+    # Find number of lines
+    n_1 = len(durations_1)
+    n_2 = len(durations_2)
+
+    # Correct for different list sizes
+    if n_1 > n_2: # More pause than speech (implies pause first)
+        durations_2.append(0.0)
+        n_2 = len(durations_2)
+    elif n_2 > n_1: # More speech than pause (implies pause first)
+        durations_1.insert(0, 0.0)
+        n_1 = len(durations_1)
+
+    durations_1 = [1000 * x for x in durations_1]
+    durations_2 = [1000 * x for x in durations_2]
+
+    # Combine vectors
+    all_d = zip(durations_1, durations_2)
+
+    # Set up file names    
+    fname = re.sub('\.wav$', '', file_name)
+    output_file = output_dir + os.sep + fname + suffix + '.dat'
+
+    # Open the file
+    fid = open(output_file, 'w')
+    fid.write(columns[0] + "\t " + columns[1] + "\n")
+
+    for i in range(0, n_1):
+        fid.write("%.3f\t " % all_d[i][0] + "%.3f\n" % all_d[i][1])
+
+    fid.close()
+
+    return
