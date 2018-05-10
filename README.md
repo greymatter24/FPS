@@ -1,5 +1,5 @@
 # FPS
-Fluency Profiling System BETA V0.1: This version of the FPS is a port from Matlab to Python. The present version differs from the version in Little2012 in the following ways: (1) An EM algorithm is used instead of Dirichlet process classification in the speech vs pause classification stage. (2) There is currently no breath classification algorithm implemented. Otherwise the details match the details of the FPS described in papers/Little2012 [FPS].pdf
+Fluency Profiling System BETA V1.0: This version of the FPS is a port from Matlab to Python. The present version differs from the version in Little2012 in the following ways: (1) There is currently no breath classification algorithm implemented. Otherwise the details match the details of the FPS described in papers/Little2012 [FPS].pdf
 
 To run, type:
 
@@ -67,16 +67,18 @@ Files:
        
        /papers/ - Contains relevant publications about FPS (note that the Python version is a simplified version of the one published in Little2012.pdf
        
-       /parameters/ - Contains the settings .txt file which has some basic parameter settings for the FPS
+       /parameters/ - Contains the settings.par file which has some basic parameter settings for the FPS
 ==============================================================================
 
-TODO: Add Dirichlet process classification of speech and pause durations
-      
-      Add Breath classification
+TODO: Add Breath classification
       
 ==============================================================================
 
 CHANGE LOG
+
+180510 V1.0 Major Upgrade
+
+       Added DP-GMM option for energy classification
 
 180510 Added duration output
 
